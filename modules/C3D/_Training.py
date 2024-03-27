@@ -1,6 +1,6 @@
 from typing import Any
-import lightning as L
-from lightning.pytorch.utilities.types import STEP_OUTPUT
+import pytorch_lightning as L
+from pytorch_lightning.utilities.types import STEP_OUTPUT
 import torch
 import torch.nn as nn
 from torch.optim import SGD

@@ -7,20 +7,32 @@ import cv2
 torch.backends.cudnn.benchmark = True
 
 @click.command()
-@click.option('--video', default='./dataset/UCF-101/Bowling/v_Bowling_g02_c03.avi', help='This is the video path.')
+@click.option('--video', default='./assets/random  video.gif', help='This is the video path.')
 @click.option('--output', default='./output', help='This is the output folder.')
 @click.option('--device', default='cuda:0', help='This is the device to be used.')
 @click.option('-m', default='./models/c3d-pretrained.pth', help='This is the model path.')
-@click.option('--classes', default='./output/ucf_labels.txt', help='This is the classes path.')
+@click.option('--classes', default='C:/Users/Elvin/illumin-actrecv/C3D-PyTorch-Lightning/output/label.labels.txt', help='This is the classes path.')
 def main(video:str, output:str, device:str, m:str, classes:str):
     # init device
     device = torch.device(device if torch.cuda.is_available() else "cpu")
     print("Device being used:", device)
 
+    '''
+    try:
+        with open(classes, 'r') as f:
+            class_names = f.readlines()
+    except FileNotFoundError:
+        print("Error: Classes file not found.")
+    except Exception as e:
+        print("Error:", e)
+
+    
+    '''
     # load class names
     with open(classes, 'r') as f:
         class_names = f.readlines()
         f.close()
+        
     
     # init model
     model = C3D(num_classes=101)
@@ -31,8 +43,8 @@ def main(video:str, output:str, device:str, m:str, classes:str):
 
     # read video and init output
     output = os.path.join(output, video.split('/')[-1])
-    print("Input video:", video)
-    print("Output video:", output)
+    #print("Input video:", video)
+    #print("Output video:", output)
     
     cap = cv2.VideoCapture(video)
     retaining = True
@@ -46,6 +58,7 @@ def main(video:str, output:str, device:str, m:str, classes:str):
 
     clip = []
     print("Reading video...")
+    action_predicted_label = None
     while retaining:
         retaining, frame = cap.read()
         if not retaining and frame is None:
@@ -64,6 +77,9 @@ def main(video:str, output:str, device:str, m:str, classes:str):
 
             probs = torch.nn.Softmax(dim=1)(outputs)
             label = torch.max(probs, 1)[1].detach().cpu().numpy()[0]
+            #print("Predicted class:", class_names[label].strip())
+            action_predicted_label = class_names[label].strip()
+
 
             cv2.putText(frame, class_names[label].split(' ')[-1].strip(), (20, 20),
                         cv2.FONT_ITALIC, 0.6,
@@ -77,6 +93,7 @@ def main(video:str, output:str, device:str, m:str, classes:str):
 
     cap.release()
     out.release()
+    print(" predicted label:", action_predicted_label)
     print("Done!")
 
 def center_crop(frame) -> np.ndarray:

@@ -5,7 +5,7 @@ from datetime import datetime
 
 import torch
 import numpy as np
-import lightning as L
+import pytorch_lightning as L
 from pytorch_lightning.loggers import WandbLogger
 from torch.utils.data import DataLoader
 from os.path import join
